@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -10,6 +13,8 @@ export default function SignIn() {
     password: "",
   });
 
+  const navigate = useNavigate()
+
   const { email, password } = formData;
 
   function onChange(e) {
@@ -17,6 +22,23 @@ export default function SignIn() {
       ...prevState,
       [e.target.id]: e.target.value,
     }));
+  }
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      if (userCredential.user) {
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error("Bad user credentials");
+    }
   }
 
   return (
@@ -31,7 +53,7 @@ export default function SignIn() {
           />
         </div>
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-20">
-          <form>
+          <form onSubmit={onSubmit}>
             <input
               type="email"
               id="email"
@@ -74,7 +96,10 @@ export default function SignIn() {
                 </Link>
               </p>
               <p>
-                <Link to="/forgot-password" className=" text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out">
+                <Link
+                  to="/forgot-password"
+                  className=" text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out"
+                >
                   Forgot Password
                 </Link>
               </p>
